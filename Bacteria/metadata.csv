@@ -1,0 +1,410 @@
+﻿Sample_name,Species,Site,Sizes
+NE01,Tn,Northeast coast,Juvenile
+NE02,Tn,Northeast coast,Juvenile
+YL01,Tn,Northeast coast,Adult
+YL02,Tm,Northeast coast,Adult
+GS01,Tm,Northeast coast,Juvenile
+GS02,Ts,Northeast coast,Juvenile
+GS03,Tn,Northeast coast,Juvenile
+GS04,Tn,Northeast coast,Adult
+GS05,Tn,Northeast coast,Adult
+GS19,Tn,Northeast coast,Adult
+GS18,Tn,Northeast coast,Adult
+GS06,Tn,Northeast coast,Adult
+GS20,Tm,Northeast coast,Juvenile
+GS17,Tn,Northeast coast,Adult
+GS10,Tn,Northeast coast,Adult
+GS09,Tn,Northeast coast,Adult
+GS16,Tm,Northeast coast,Adult
+TT14,Tn,Taitung,Juvenile
+TT15,Tm,Taitung,Juvenile
+TT12,Tm,Taitung,Juvenile
+TT05,Tn,Taitung,Juvenile
+TT27,Tn,Taitung,Juvenile
+TT06,Tn,Taitung,Juvenile
+TT32,Ts,Taitung,Juvenile
+TT33,Tn,Taitung,Juvenile
+TT02,Tm,Taitung,Juvenile
+TT11,Tn,Taitung,Juvenile
+TT16,Tm,Taitung,Juvenile
+TT04,Tn,Taitung,Juvenile
+TT13,Tn,Taitung,Juvenile
+TT03,Tm,Taitung,Juvenile
+TT29,Ts,Taitung,Juvenile
+TT10,Tm,Taitung,Juvenile
+TT21,Tn,Taitung,Juvenile
+TT22,Ts,Taitung,Juvenile
+TT24,Tn,Taitung,Juvenile
+TT23,Tn,Taitung,Juvenile
+TT30,Tn,Taitung,Juvenile
+TT20,Ts,Taitung,Juvenile
+TT07,Ts,Taitung,Juvenile
+TT01,Tn,Taitung,Adult
+TT28,Ts,Taitung,Juvenile
+TT09,Tn,Taitung,Adult
+TT31,Tn,Taitung,Adult
+TT17,Ts,Taitung,Juvenile
+TT08,Tm,Taitung,Juvenile
+TT26,Tn,Taitung,Adult
+TT18,Tm,Taitung,Adult
+TT19,Tm,Taitung,Adult
+TT25,Tm,Taitung,Adult
+KT02,Tm,Kenting,Juvenile
+KT04,Tm,Kenting,Juvenile
+KT05,Tn,Kenting,Juvenile
+KT06,Tm,Kenting,Adult
+KT07,Tn,Kenting,Adult
+KT08,Tm,Kenting,Juvenile
+KT09,Tn,Kenting,Adult
+KT10,Tn,Kenting,Juvenile
+KT12,Tm,Kenting,Juvenile
+KT13,Tm,Kenting,Juvenile
+KT14,Tn,Kenting,Adult
+KT15,Tn,Kenting,Adult
+KT16,Tn,Kenting,Juvenile
+KT17,Tn,Kenting,Adult
+KT18,Tn,Kenting,Juvenile
+KT31,Tn,Kenting,Juvenile
+KT32,Tn,Kenting,Adult
+KT33,Tn,Kenting,Adult
+KT34,Tn,Kenting,Juvenile
+KT35,Tn,Kenting,Juvenile
+KT36,Tn,Kenting,Juvenile
+KT37,Tc,Kenting,Juvenile
+KT38,Tn,Kenting,Adult
+KT39,Tn,Kenting,Adult
+KT40,Tn,Kenting,Juvenile
+KT41,Tn,Kenting,Juvenile
+KT42,Tn,Kenting,Adult
+KT43,Tn,Kenting,Juvenile
+KT44,Tn,Kenting,Adult
+KT45,Tn,Kenting,Juvenile
+KT46,Tn,Kenting,Adult
+KT47,Tn,Kenting,Adult
+KT48,Tn,Kenting,Juvenile
+KT49,Tn,Kenting,Juvenile
+KT50,Ts,Kenting,Adult
+KT01,Ts,Kenting,Juvenile
+KT22,Tm,Kenting,Juvenile
+KT20,Tm,Kenting,Juvenile
+KT19,Tm,Kenting,Adult
+KT21,Tm,Kenting,Adult
+KT23,Tn,Kenting,Juvenile
+KT28,Tn,Kenting,Adult
+KT26,Tm,Kenting,Adult
+KT24,Tn,Kenting,Adult
+KT27,Tn,Kenting,Adult
+KT30,Ts,Kenting,Juvenile
+LD42,Tm,Lyudao,Juvenile
+LD43,Tn,Lyudao,Juvenile
+LD39,Tn,Lyudao,Juvenile
+LD40,Tm,Lyudao,Juvenile
+LD41,Tm,Lyudao,Adult
+LD22,Tm,Lyudao,Juvenile
+LD17,Tm,Lyudao,Juvenile
+LD24,Tc,Lyudao,Adult
+LD25,Tc,Lyudao,Juvenile
+LD16,Tm,Lyudao,Juvenile
+LD19,Tn,Lyudao,Juvenile
+LD21,Tm,Lyudao,Juvenile
+LD20,Tm,Lyudao,Juvenile
+LD18,Tm,Lyudao,Juvenile
+LD23,Tm,Lyudao,Juvenile
+LD26,Tm,Lyudao,Juvenile
+LD27,Tn,Lyudao,Adult
+LD35,Tm,Lyudao,Juvenile
+LD34,Tm,Lyudao,Juvenile
+LD38,Tn,Lyudao,Juvenile
+LD29,Tm,Lyudao,Juvenile
+LD37,Tm,Lyudao,Juvenile
+LD28,Tm,Lyudao,Juvenile
+LD33,Tm,Lyudao,Juvenile
+LD30,Tm,Lyudao,Juvenile
+LD32,Tn,Lyudao,Juvenile
+LD36,Tm,Lyudao,Juvenile
+LD31,Tm,Lyudao,Juvenile
+LD57,Ts,Lyudao,Adult
+LD55,Tm,Lyudao,Juvenile
+LD56,Tn,Lyudao,Juvenile
+LD46,Tm,Lyudao,Juvenile
+LD50,Tm,Lyudao,Juvenile
+LD45,Tm,Lyudao,Juvenile
+LD53,Tm,Lyudao,Juvenile
+LD49,Tm,Lyudao,Juvenile
+LD54,Tm,Lyudao,Juvenile
+LD47,Ts,Lyudao,Adult
+LD51,Tm,Lyudao,Adult
+LD48,Tm,Lyudao,Adult
+LD52,Tm,Lyudao,Adult
+LD58,Tm,Lyudao,Adult
+LD44,Tm,Lyudao,Adult
+LD60,Tm,Lyudao,Juvenile
+LD62,Tm,Lyudao,Juvenile
+LD61,Tm,Lyudao,Juvenile
+LD63,Tm,Lyudao,Juvenile
+LD59,Tm,Lyudao,Juvenile
+G25,Ts,Lyudao,Adult
+G14,Ts,Lyudao,Adult
+G29,Tm,Lyudao,Adult
+LD11,Ts,Lyudao,Juvenile
+LD14,Ts,Lyudao,Juvenile
+LD08,Tn,Lyudao,Adult
+LD03,Ts,Lyudao,Juvenile
+LD10,Ts,Lyudao,Adult
+LD15,Tm,Lyudao,Juvenile
+LD06,Tm,Lyudao,Juvenile
+LY08,Tm,Lanyu,Juvenile
+LY19,Tm,Lanyu,Juvenile
+LY15,Tm,Lanyu,Juvenile
+LY11,Tm,Lanyu,Juvenile
+LY05,Tn,Lanyu,Juvenile
+LY23,Tm,Lanyu,Juvenile
+LY07,Tn,Lanyu,Juvenile
+LY34,Tm,Lanyu,Juvenile
+LY09,Tn,Lanyu,Juvenile
+LY01,Tm,Lanyu,Juvenile
+LY06,Tm,Lanyu,Juvenile
+LY13,Ts,Lanyu,Juvenile
+LY57,Tm,Lanyu,Juvenile
+LY14,Tm,Lanyu,Juvenile
+LY21,Tm,Lanyu,Juvenile
+LY36,Tm,Lanyu,Juvenile
+LY02,Tm,Lanyu,Juvenile
+LY16,Tm,Lanyu,Juvenile
+LY59,Tm,Lanyu,Juvenile
+LY33,Tm,Lanyu,Juvenile
+LY22,Ts,Lanyu,Juvenile
+LY04,Tm,Lanyu,Juvenile
+LY24,Tn,Lanyu,Juvenile
+LY51,Tm,Lanyu,Juvenile
+LY61,Tm,Lanyu,Juvenile
+LY31,Tm,Lanyu,Juvenile
+LY20,Tm,Lanyu,Juvenile
+LY39,Tm,Lanyu,Juvenile
+LY45,Tm,Lanyu,Juvenile
+LY12,Tm,Lanyu,Juvenile
+LY18,Tm,Lanyu,Juvenile
+LY27,Tm,Lanyu,Juvenile
+LY49,Tm,Lanyu,Juvenile
+LY03,Tm,Lanyu,Juvenile
+LY46,Tm,Lanyu,Juvenile
+LY17,Tm,Lanyu,Juvenile
+LY28,Tm,Lanyu,Juvenile
+LY29,Tm,Lanyu,Juvenile
+LY53,Tm,Lanyu,Juvenile
+LY42,Tm,Lanyu,Juvenile
+LY47,Tm,Lanyu,Juvenile
+LY52,Tm,Lanyu,Juvenile
+LY32,Tm,Lanyu,Juvenile
+LY55,Tm,Lanyu,Juvenile
+LY43,Tm,Lanyu,Juvenile
+LY40,Tm,Lanyu,Juvenile
+LY41,Tm,Lanyu,Juvenile
+LY25,Tm,Lanyu,Juvenile
+LY50,Tn,Lanyu,Juvenile
+LY35,Tm,Lanyu,Juvenile
+LY38,Tm,Lanyu,Juvenile
+LY54,Tm,Lanyu,Juvenile
+LY60,Tm,Lanyu,Juvenile
+LY44,Tm,Lanyu,Juvenile
+LY56,Tn,Lanyu,Adult
+LY48,Tm,Lanyu,Juvenile
+LY30,Tm,Lanyu,Juvenile
+LY26,Tm,Lanyu,Juvenile
+LY37,Tm,Lanyu,Adult
+LY62,Tm,Lanyu,Adult
+CM04,Tn,Penghu,Juvenile
+CM08,Tn,Penghu,Adult
+CM09,Ts,Penghu,Juvenile
+CM06,Tn,Penghu,Adult
+CM10,Tn,Penghu,Adult
+CM02,Tn,Penghu,Adult
+CM03,Ts,Penghu,Juvenile
+CM11,Ts,Penghu,Juvenile
+CM12,Tn,Penghu,Adult
+CM05,Tn,Penghu,Adult
+CM01,Ts,Penghu,Adult
+CM07,Tm,Penghu,Adult
+CM15,Tm,Penghu,Adult
+CM13,Tm,Penghu,Adult
+CM14,Tm,Penghu,Adult
+CM16,Tm,Penghu,Adult
+PH08,Tn,Penghu,Juvenile
+PH07,Tn,Penghu,Adult
+PH10,Tn,Penghu,Adult
+PH13,Tn,Penghu,Adult
+PH02,Tn,Penghu,Adult
+PH03,Tn,Penghu,Adult
+PH01,Tn,Penghu,Adult
+PH04,Tn,Penghu,Adult
+PH05,Tn,Penghu,Adult
+PH14,Ts,Penghu,Adult
+PH27,Ts,Penghu,Juvenile
+PH19,Tn,Penghu,Adult
+PH21,Tn,Penghu,Adult
+PH17,Ts,Penghu,Juvenile
+PH26,Tn,Penghu,Adult
+PH22,Ts,Penghu,Adult
+PH16,Tn,Penghu,Adult
+PH30,Tn,Penghu,Adult
+PH24,Tn,Penghu,Adult
+W24,Ts,Penghu,Juvenile
+W14,Ts,Penghu,Adult
+WA031,Tn,Penghu,Adult
+WA09,Tn,Penghu,Adult
+WA04,Tn,Penghu,Adult
+WA05,Tn,Penghu,Adult
+WA02,Tn,Penghu,Adult
+WA06,Tn,Penghu,Adult
+WA07,Tn,Penghu,Adult
+WA01,Ts,Penghu,Adult
+WA08,Tm,Penghu,Adult
+XL01,Tm,Xiao Liuqiu,Juvenile
+XL02,Tn,Xiao Liuqiu,Juvenile
+XL03,Ts,Xiao Liuqiu,Juvenile
+XL04,Tm,Xiao Liuqiu,Juvenile
+XL29,Tn,Xiao Liuqiu,Juvenile
+XL37,Ts,Xiao Liuqiu,Juvenile
+XL09,Tn,Xiao Liuqiu,Juvenile
+XL38,Tn,Xiao Liuqiu,Juvenile
+XL27,Tm,Xiao Liuqiu,Juvenile
+XL10,Tm,Xiao Liuqiu,Juvenile
+XL15,Ts,Xiao Liuqiu,Juvenile
+XL06,Ts,Xiao Liuqiu,Juvenile
+XL14,Ts,Xiao Liuqiu,Adult
+XL12,Ts,Xiao Liuqiu,Adult
+XL05,Tn,Xiao Liuqiu,Juvenile
+XL21,Ts,Xiao Liuqiu,Adult
+XL24,Tn,Xiao Liuqiu,Juvenile
+XL36,Tm,Xiao Liuqiu,Juvenile
+XL40,Tn,Xiao Liuqiu,Juvenile
+XL34,Tm,Xiao Liuqiu,Juvenile
+XL20,Tn,Xiao Liuqiu,Juvenile
+XL46,Tm,Xiao Liuqiu,Juvenile
+XL22,Tn,Xiao Liuqiu,Juvenile
+XL49,Tn,Xiao Liuqiu,Juvenile
+XL23,Tm,Xiao Liuqiu,Juvenile
+XL41,Tm,Xiao Liuqiu,Juvenile
+XL33,Tm,Xiao Liuqiu,Juvenile
+XL47,Tm,Xiao Liuqiu,Juvenile
+XL13,Ts,Xiao Liuqiu,Adult
+XL31,Tn,Xiao Liuqiu,Juvenile
+XL43,Tm,Xiao Liuqiu,Juvenile
+XL50,Tn,Xiao Liuqiu,Juvenile
+XL11,Tm,Xiao Liuqiu,Juvenile
+XL35,Tm,Xiao Liuqiu,Juvenile
+XL25,Tm,Xiao Liuqiu,Juvenile
+XL39,Tm,Xiao Liuqiu,Juvenile
+XL42,Tm,Xiao Liuqiu,Juvenile
+XL45,Tm,Xiao Liuqiu,Adult
+XL44,Tm,Xiao Liuqiu,Adult
+XL26,Tn,Xiao Liuqiu,Adult
+XL48,Tn,Xiao Liuqiu,Adult
+XL08,Tn,Xiao Liuqiu,Adult
+OK04,Tc,Okinawa,Juvenile
+OK06,Tm,Okinawa,Juvenile
+OK22,Ts,Okinawa,Juvenile
+OK09,Tc,Okinawa,Juvenile
+OK28,Tc,Okinawa,Juvenile
+OK12,Tm,Okinawa,Juvenile
+OK07,Ts,Okinawa,Juvenile
+OK21,Tm,Okinawa,Juvenile
+OK37,Tc,Okinawa,Juvenile
+OK02,Tm,Okinawa,Juvenile
+OK13,Tm,Okinawa,Juvenile
+OK14,Tm,Okinawa,Juvenile
+OK10,Tm,Okinawa,Juvenile
+OK08,Tm,Okinawa,Juvenile
+OK16,Tm,Okinawa,Juvenile
+OK15,Tm,Okinawa,Juvenile
+OK19,Tm,Okinawa,Juvenile
+OK18,Tm,Okinawa,Juvenile
+OK30,Tm,Okinawa,Juvenile
+OK17,Tm,Okinawa,Juvenile
+OK03,Ts,Okinawa,Adult
+OK05,Tc,Okinawa,Juvenile
+OK25,Tc,Okinawa,Adult
+OK26,Tc,Okinawa,Adult
+OK27,Tm,Okinawa,Adult
+OK31,Tc,Okinawa,Adult
+OK29,Tn,Okinawa,Juvenile
+OK20,Tm,Okinawa,Adult
+OK24,Tc,Okinawa,Adult
+OK32,Hh,Okinawa,Juvenile
+OK36,Hh,Okinawa,Juvenile
+OK01,Tc,Okinawa,Adult
+OK39,Tn,Okinawa,Juvenile
+DS13,Tm,Dongsha,Juvenile
+DS01,Tm,Dongsha,Juvenile
+DS16,Tm,Dongsha,Juvenile
+DS10,Tn,Dongsha,Juvenile
+DS17,Tm,Dongsha,Juvenile
+DS26,Tn,Dongsha,Adult
+DS29,Tm,Dongsha,Adult
+DS03,Tm,Dongsha,Adult
+DS09,Hh,Dongsha,Adult
+DS04,Tn,Dongsha,Adult
+DS11,Ts,Dongsha,Juvenile
+DS02,Tm,Dongsha,Adult
+DS22,Tm,Dongsha,Adult
+DS14,Tn,Dongsha,Adult
+DS12,Tm,Dongsha,Adult
+DS27,Tm,Dongsha,Adult
+DS15,Tm,Dongsha,Adult
+DS21,Tn,Dongsha,Adult
+DS25,Tm,Dongsha,Adult
+DS20,Tm,Dongsha,Adult
+DS23,Tn,Dongsha,Adult
+DS19,Tm,Dongsha,Adult
+DS24,Tn,Dongsha,Adult
+DS06,Tn,Dongsha,Adult
+DS05,Tm,Dongsha,Adult
+DS18,Tn,Dongsha,Adult
+DS28,Tm,Dongsha,Adult
+DS08,Tm,Dongsha,Adult
+DS07,Tm,Dongsha,Adult
+TP14,Tm,Taiping Island,Juvenile
+TP05,Tm,Taiping Island,Juvenile
+TP02,Tm,Taiping Island,Juvenile
+TP16,Tm,Taiping Island,Juvenile
+TP03,Tm,Taiping Island,Juvenile
+TP06,Ts,Taiping Island,Juvenile
+TP37,Tm,Taiping Island,Juvenile
+TP01,Tm,Taiping Island,Juvenile
+TP25,Tm,Taiping Island,Juvenile
+TP13,Tm,Taiping Island,Juvenile
+TP22,Tm,Taiping Island,Juvenile
+TP27,Tm,Taiping Island,Juvenile
+TP39,Tm,Taiping Island,Juvenile
+TP50,Tm,Taiping Island,Juvenile
+TP29,Tm,Taiping Island,Juvenile
+TP10,Tm,Taiping Island,Juvenile
+TP43,Tm,Taiping Island,Juvenile
+TP24,Tm,Taiping Island,Juvenile
+TP15,Tm,Taiping Island,Juvenile
+TP47,Tm,Taiping Island,Adult
+TP21,Tm,Taiping Island,Adult
+TP04,Tm,Taiping Island,Adult
+TP45,Tm,Taiping Island,Adult
+TP19,Tm,Taiping Island,Adult
+TP28,Tm,Taiping Island,Adult
+TP44,Tm,Taiping Island,Adult
+TP26,Tm,Taiping Island,Adult
+TP11,Tm,Taiping Island,Adult
+TP23,Ts,Taiping Island,Adult
+TP08,Tm,Taiping Island,Adult
+TP36,Tm,Taiping Island,Adult
+TP46,Tm,Taiping Island,Adult
+TP32,Tm,Taiping Island,Adult
+TP33,Tm,Taiping Island,Adult
+TP38,Tm,Taiping Island,Adult
+TP40,Tm,Taiping Island,Adult
+TP34,Tm,Taiping Island,Adult
+TP41,Tm,Taiping Island,Adult
+TP20,Tm,Taiping Island,Adult
+TP07,Tm,Taiping Island,Adult
+TP48,Tm,Taiping Island,Adult
+TP49,Tm,Taiping Island,Adult
+TP09,Tm,Taiping Island,Adult
+TP35,Tm,Taiping Island,Adult
+TP51,Tm,Taiping Island,Adult
