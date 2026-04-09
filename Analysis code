@@ -1,5 +1,5 @@
 
-setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data")
+
 rm(list=ls())
 #library####
 library(rlang)
@@ -26,7 +26,7 @@ library(ggplot2)
 library(maps)
 library(cowplot)
 library(ggrepel)
-setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data")
+
 df_raw <- read_excel("site.xlsx") %>%
   filter(`Collection Site` != "Okinawa")
 
@@ -712,7 +712,7 @@ p
 
 #Fig4####
 rm(list=ls())
-setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data/raw")
+
 picrust <- readRDS("picrust_with_length.rds")
 #organism_pcoa
 picrust_filter <- subset_samples(picrust, !Species %in% c("Tc", "Hh"))
@@ -1425,7 +1425,7 @@ install.packages(
   "SpiecEasi",
   repos = c("https://bioc.r-universe.dev", "https://cloud.r-project.org")
 )
-setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data")
+
 rm(list=ls())
 
 physeq <- readRDS("physeq2_with_length.rds")
