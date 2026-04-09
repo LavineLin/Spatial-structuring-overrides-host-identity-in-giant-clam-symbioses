@@ -1,1 +1,1904 @@
 
+setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data")
+rm(list=ls())
+#library####
+library(rlang)
+library(ggthemes)
+library(phyloseq)
+library(RColorBrewer)
+library(ggplot2)
+library(vegan)
+library(ggpubr)
+library(dplyr)
+library(MicrobiomeStat)
+#library(rpl)
+#library(Rarefy)
+library(ggh4x)
+library(randomcoloR)
+library(forcats)
+#library(MicEco)
+library(eulerr)
+#Fig1####
+library(readxl)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(maps)
+library(cowplot)
+library(ggrepel)
+setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data")
+df_raw <- read_excel("site.xlsx") %>%
+  filter(`Collection Site` != "Okinawa")
+
+world <- map_data("world")
+colors <- c(
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"
+)
+
+p_main <- ggplot() +
+  geom_polygon(
+    data = world,
+    aes(x = long, y = lat, group = group),
+    fill = "grey85", color = "grey50", linewidth = 0.2
+  ) +
+  geom_point(
+    data = df_raw,
+    aes(x = longitude, y = latitude),
+    size = 3, color = "black"
+  ) +
+  geom_text_repel(
+    data = df_raw,
+    aes(x = longitude, y = latitude, label = `Collection Site`),
+    size = 3,
+    box.padding = 0.3,
+    point.padding = 0.2,
+    segment.size = 0.3
+  )+
+  scale_fill_manual(values = colors) +
+  scale_color_manual(values = colors, guide = "none") +
+  coord_fixed(
+    xlim = c(110, 135),
+    ylim = c(5, 30),
+    ratio = 1.2
+  ) +
+  theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "right"
+  ) +
+  labs(
+    x = "Longitude (°E)",
+    y = "Latitude (°N)"
+  )+ labs(fill = "Site") +
+  
+  # Scale bar line
+  annotate("segment",
+           x = 129, xend = 134,
+           y = 6.5, yend = 6.5,
+           linewidth = 1) +
+  annotate("text",
+           x = 129, y = 6,
+           label = "0",
+           size = 3) +
+  annotate("text",
+           x = 134, y = 6,
+           label = "500 km",
+           size = 3)+ annotate("segment",
+                               x = 133, xend = 133,
+                               y = 26.5, yend = 28,
+                               linewidth = 1) +
+  annotate("polygon",
+           x = c(132.8, 133, 133.2),
+           y = c(28, 28.8, 28),
+           fill = "black") +
+  annotate("text",
+           x = 133,
+           y = 29.3,
+           label = "N",
+           size = 4,
+           fontface = "bold")
+
+p_main
+#Fig2####
+#細菌
+physeq <- readRDS("physeq3_with_length_region.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+sd <- as(sample_data(physeq_filtered), "data.frame")
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+otu <- otu_table(physeq_filtered)
+otu_mat <- as(otu, "matrix")
+
+# 如果 taxa 不在 row，要轉置
+if (!taxa_are_rows(physeq_filtered)) {
+  otu_mat <- t(otu_mat)
+}
+otu_df <- as.data.frame(otu_mat)
+write.csv(otu_df, "/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data/raw/no okinawa/feature_table2.csv", quote = FALSE)
+
+physeq_filtered <- subset_samples(physeq_filtered, Site %in% c("Lanyu", "Lyudao","Taitung"))
+physeq_filtered <- subset_samples(physeq_filtered, Site %in% c("Taiping Island", "Dongsha"))
+physeq_filtered <- subset_samples(physeq_filtered, !Site %in% c("Taiping Island", "Dongsha","Lanyu", "Lyudao","Taitung"))
+sample_data(physeq_filtered)$Site <- factor(sample_data(physeq_filtered)$Site,
+                                            levels = c("Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+# 距離矩陣
+dist_bray <- phyloseq::distance(physeq_filtered, method = "bray", binary = FALSE)
+
+# 取出樣本資訊
+meta <- as(sample_data(physeq_filtered), "data.frame")
+
+set.seed(123)
+# by = "margin"：給出邊際效果；若想一次性(type I)則改 by = "terms"
+
+
+adon2 <- adonis2(dist_bray ~ Site * Species*length, data = meta,
+                 permutations = 999, by = "terms")
+adon2
+
+
+colors <- c(
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",  # 低飽和藍綠
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"   # 低飽和橄欖綠
+)
+
+ord <- ordinate(physeq_filtered, method = "PCoA", distance = dist_bray)
+
+# 抓 PCoA 軸解釋度（%）
+eig <- ord$values$Relative_eig * 100
+xlab_txt <- sprintf("PCoA1 (%.1f%%)", eig[1])
+ylab_txt <- sprintf("PCoA2 (%.1f%%)", eig[2])
+
+# adonis2（示例：by="margin"）
+meta <- as(sample_data(physeq_filtered), "data.frame")
+adon_m <- adonis2(as.matrix(dist_bray) ~ Site + Species, data = meta, permutations = 999, by = "margin")
+
+get_r2_p <- function(ad, term){
+  r2 <- ad$R2[rownames(ad) == term]
+  p  <- ad$`Pr(>F)`[rownames(ad) == term]
+  list(r2 = r2, p = p)
+}
+
+rp_site   <- get_r2_p(adon2, "Site")
+rp_sp     <- get_r2_p(adon2, "Species")
+rp_int    <- get_r2_p(adon2, "Site:Species")
+
+
+sample_data(physeq_filtered)$Site <- factor(sample_data(physeq_filtered)$Site,
+                                            levels = c("Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+a <- plot_ordination(physeq_filtered, ord, type = "samples", color = "Site", shape = "Species") +
+  geom_point(size = 4, alpha = 0.9) +
+  scale_color_manual(values = colors) +
+  coord_equal() +
+  labs(x = xlab_txt, y = ylab_txt) +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background  = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text  = element_text(size = 13),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.text  = element_text(size = 12)
+  )
+
+a
+
+library(dplyr)
+library(tibble)
+dfC <- as.data.frame(adon2) %>%
+  rownames_to_column("Term") %>%
+  filter(Term != "Residual", Term != "Total") %>%
+  mutate(
+    Term = factor(Term, levels = Term[order(R2, decreasing = TRUE)]),
+    sig = case_when(
+      `Pr(>F)` <= 0.001 ~ "***",
+      `Pr(>F)` <= 0.01  ~ "**",
+      `Pr(>F)` <= 0.05  ~ "*",
+      `Pr(>F)` <= 0.1   ~ " ",
+      TRUE              ~ ""
+    ),
+    p_label = ifelse(`Pr(>F)` < 0.001, "<0.001", sprintf("%.3f", `Pr(>F)`))
+  )
+library(ggplot2)
+
+offset <- max(dfC$R2) * 0.025
+
+b <- ggplot(dfC, aes(x = R2, y = Term)) +
+  geom_col(width = 0.75) +
+  geom_text(
+    data = subset(dfC, sig != ""),
+    aes(x = R2 + offset, label = sig),
+    size = 5,
+    hjust = 0
+  ) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(x = expression(italic(R)^2), y = NULL) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 14, face = "bold")
+  )
+
+b
+
+#共生藻
+#read_data
+physeq <- readRDS("physeq_sym_with_length.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Clam_species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+# 取出 sample_data
+sd <- as(sample_data(physeq_filtered), "data.frame")
+
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+colnames(sd)[colnames(sd) == "Clam_species"] <- "Species"
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+
+
+#PCoA_adonis
+# 距離矩陣
+dist_bray <- phyloseq::distance(physeq_filtered, method = "bray", binary = FALSE)
+
+# 取出樣本資訊
+meta <- as(sample_data(physeq_filtered), "data.frame")
+
+set.seed(123)
+# by = "margin"：給出邊際效果；若想一次性(type I)則改 by = "terms"
+
+
+adon2 <- adonis2(dist_bray ~ Site * Species*length, data = meta,
+                 permutations = 999, by = "terms")
+adon2
+
+sample_data(physeq_filtered)$Site <- factor(sample_data(physeq_filtered)$Site,
+                                            levels = c("Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+#pcoa_jaccard_binary = ordinate(rarefied_physeq, method = "PCoA", distance = "bray")
+ord <- ordinate(physeq_filtered, method = "PCoA", distance = dist_bray)
+
+# 抓 PCoA 軸解釋度（%）
+eig <- ord$values$Relative_eig * 100
+xlab_txt <- sprintf("PCoA1 (%.1f%%)", eig[1])
+ylab_txt <- sprintf("PCoA2 (%.1f%%)", eig[2])
+
+# adonis2（示例：by="margin"）
+meta <- as(sample_data(physeq_filtered), "data.frame")
+adon_m <- adonis2(as.matrix(dist_bray) ~ Site + Species, data = meta, permutations = 999, by = "margin")
+
+get_r2_p <- function(ad, term){
+  r2 <- ad$R2[rownames(ad) == term]
+  p  <- ad$`Pr(>F)`[rownames(ad) == term]
+  list(r2 = r2, p = p)
+}
+
+rp_site   <- get_r2_p(adon2, "Site")
+rp_sp     <- get_r2_p(adon2, "Species")
+rp_int    <- get_r2_p(adon2, "Site:Species")
+sample_data(physeq_filtered)$Site <- factor(sample_data(physeq_filtered)$Site,
+                                            levels = c("Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+c <- plot_ordination(physeq_filtered, ord, type = "samples", color = "Site", shape = "Species") +
+  geom_point(size = 4, alpha = 0.9) +
+  scale_color_manual(values = colors) +
+  coord_equal() +
+  labs(x = xlab_txt, y = ylab_txt) +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background  = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text  = element_text(size = 13),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.text  = element_text(size = 12)
+  )
+
+c
+
+library(dplyr)
+library(tibble)
+dfC <- as.data.frame(adon2) %>%
+  rownames_to_column("Term") %>%
+  filter(Term != "Residual", Term != "Total") %>%
+  mutate(
+    Term = factor(Term, levels = Term[order(R2, decreasing = TRUE)]),
+    sig = case_when(
+      `Pr(>F)` <= 0.001 ~ "***",
+      `Pr(>F)` <= 0.01  ~ "**",
+      `Pr(>F)` <= 0.05  ~ "*",
+      `Pr(>F)` <= 0.1   ~ " ",
+      TRUE              ~ ""
+    ),
+    p_label = ifelse(`Pr(>F)` < 0.001, "<0.001", sprintf("%.3f", `Pr(>F)`))
+  )
+library(ggplot2)
+
+offset <- max(dfC$R2) * 0.025
+
+d <- ggplot(dfC, aes(x = R2, y = Term)) +
+  geom_col(width = 0.75) +
+  geom_text(
+    data = subset(dfC, sig != ""),
+    aes(x = R2 + offset, label = sig),
+    size = 5,
+    hjust = 0
+  ) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(x = expression(italic(R)^2), y = NULL) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 14, face = "bold")
+  )
+
+d
+library(patchwork)
+
+final_plot <- (c| d) /
+  (a | b) +
+  plot_annotation(
+    tag_levels = "a",   # a, b, c, d
+    tag_prefix = "", 
+    tag_suffix = "",
+    theme = theme(
+      plot.tag = element_text(size = 16, face = "bold")
+    )
+  )
+
+
+ggsave(
+  "/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data/paper/Final/Fig_2.jpg",
+  final_plot,
+  width = 12,
+  height = 9,
+  dpi = 600,
+  bg = "white"
+)
+
+#Sup1####
+physeq <- readRDS("physeq3_with_length_region.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+sd <- as(sample_data(physeq_filtered), "data.frame")
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+
+physeq_filtered_blue <- subset_samples(physeq_filtered, Site %in% c("Lanyu", "Lyudao","Taitung"))
+physeq_filtered_green <- subset_samples(physeq_filtered, Site %in% c("Taiping Island", "Dongsha"))
+physeq_filtered_red <- subset_samples(physeq_filtered, !Site %in% c("Taiping Island", "Dongsha","Lanyu", "Lyudao","Taitung"))
+sample_data(physeq_filtered_blue)$Site <- factor(sample_data(physeq_filtered_blue)$Site,
+                                            levels = c("Okinawa","Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+sample_data(physeq_filtered_green)$Site <- factor(sample_data(physeq_filtered_green)$Site,
+                                            levels = c("Okinawa","Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+sample_data(physeq_filtered_red)$Site <- factor(sample_data(physeq_filtered_red)$Site,
+                                            levels = c("Okinawa","Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                       "Penghu","Xiao Liuqiu","Taiping Island"))
+
+
+# 距離矩陣
+dist_bray_blue <- phyloseq::distance(physeq_filtered_blue, method = "bray", binary = FALSE)
+dist_bray_green <- phyloseq::distance(physeq_filtered_green, method = "bray", binary = FALSE)
+dist_bray_red <- phyloseq::distance(physeq_filtered_red, method = "bray", binary = FALSE)
+# 取出樣本資訊
+metab <- as(sample_data(physeq_filtered_blue), "data.frame")
+metag <- as(sample_data(physeq_filtered_green), "data.frame")
+metar <- as(sample_data(physeq_filtered_red), "data.frame")
+set.seed(123)
+# by = "margin"：給出邊際效果；若想一次性(type I)則改 by = "terms"
+
+
+adon2_blue<- adonis2(dist_bray_blue ~ Site * Species*length, data = metab,
+                 permutations = 999, by = "terms")
+adon2_green <- adonis2(dist_bray_green ~ Site * Species*length, data = metag,
+                 permutations = 999, by = "terms")
+adon2_red <- adonis2(dist_bray_red ~ Site * Species*length, data = metar,
+                 permutations = 999, by = "terms")
+
+
+
+
+colors <- c(
+  "Okinawa"         = "#9C5A6E",
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",  # 低飽和藍綠
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"   # 低飽和橄欖綠
+)
+
+ordb <- ordinate(physeq_filtered_blue, method = "PCoA", distance = dist_bray_blue)
+ordg <- ordinate(physeq_filtered_green, method = "PCoA", distance = dist_bray_green)
+ordr <- ordinate(physeq_filtered_red, method = "PCoA", distance = dist_bray_red)
+# 抓 PCoA 軸解釋度（%）
+eigb <- ordb$values$Relative_eig * 100
+xlab_txtb <- sprintf("PCoA1 (%.1f%%)", eigb[1])
+ylab_txtb<- sprintf("PCoA2 (%.1f%%)", eigb[2])
+
+eigg <- ordg$values$Relative_eig * 100
+xlab_txtg <- sprintf("PCoA1 (%.1f%%)", eigg[1])
+ylab_txtg <- sprintf("PCoA2 (%.1f%%)", eigg[2])
+
+eigr <- ordr$values$Relative_eig * 100
+xlab_txtr <- sprintf("PCoA1 (%.1f%%)", eigr[1])
+ylab_txtr <- sprintf("PCoA2 (%.1f%%)", eigr[2])
+# adonis2（示例：by="margin"）
+meta_g <- as(sample_data(physeq_filtered_green), "data.frame")
+meta_b <- as(sample_data(physeq_filtered_blue), "data.frame")
+meta_r <- as(sample_data(physeq_filtered_red), "data.frame")
+
+adon_mr <- adonis2(as.matrix(dist_bray_red) ~ Site + Species, data = meta_r, permutations = 999, by = "margin")
+adon_mg <- adonis2(as.matrix(dist_bray_green) ~ Site + Species, data = meta_g, permutations = 999, by = "margin")
+adon_mb <- adonis2(as.matrix(dist_bray_blue) ~ Site + Species, data = meta_b, permutations = 999, by = "margin")
+
+
+get_r2_p <- function(ad, term){
+  r2 <- ad$R2[rownames(ad) == term]
+  p  <- ad$`Pr(>F)`[rownames(ad) == term]
+  list(r2 = r2, p = p)
+}
+
+
+
+a <- plot_ordination(physeq_filtered_blue, ordb, type = "samples", color = "Site", shape = "Species") +
+  geom_point(size = 4, alpha = 0.9) +
+  scale_color_manual(values = colors) +
+  coord_equal() +
+  labs(x = xlab_txtb, y = ylab_txtb) +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background  = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text  = element_text(size = 13),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.text  = element_text(size = 12)
+  )+ theme(legend.position = "none")
+
+a
+
+b <- plot_ordination(physeq_filtered_green, ordg, type = "samples", color = "Site", shape = "Species") +
+  geom_point(size = 4, alpha = 0.9) +
+  scale_color_manual(values = colors) +
+  coord_equal() +
+  labs(x = xlab_txtg, y = ylab_txtg) +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background  = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text  = element_text(size = 13),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.text  = element_text(size = 12)
+  )+ theme(legend.position = "none")
+
+b
+c <- plot_ordination(physeq_filtered_red, ordr, type = "samples", color = "Site", shape = "Species") +
+  geom_point(size = 4, alpha = 0.9) +
+  scale_color_manual(values = colors) +
+  coord_equal() +
+  labs(x = xlab_txtr, y = ylab_txtr) +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background  = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text  = element_text(size = 13),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.text  = element_text(size = 12)
+  )+ theme(legend.position = "none")
+
+c
+
+library(patchwork)
+
+abc <- (a | b | c) +
+  plot_annotation(
+    tag_levels = "a",  # a b c
+    theme = theme(
+      plot.tag = element_text(size = 16, face = "bold")
+    )
+  )
+
+abc
+ggsave("Sup1.jpg", abc, width = 14, height = 4.5, dpi = 600, bg = "white")
+
+#Fig3####
+#bac
+physeq <- readRDS("physeq2_with_length.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+#sym
+physeq <- readRDS("physeq_sym_with_length.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Clam_species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+
+
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "Clam_species"] <- "Species"
+# 放回 phyloseq 物件
+sample_data(physeq) <- sample_data(sd)
+
+# 取出 sample_data
+sd <- as(sample_data(physeq_filtered), "data.frame")
+
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+## 1) 參數：出現定義與核心門檻
+min_reads <- 10          # 出現的最小讀數
+min_relab <- 1e-4        # 或相對豐度 0.01%
+prev_cut    <- 0.7        # 50/70/90%
+site_col    <- "Site"  
+
+# ==== 1) 建 presence/absence
+ps_rel   <- transform_sample_counts(physeq_filtered, function(x) x/sum(x))
+otu_abs  <- as.data.frame(otu_table(physeq_filtered))
+otu_rel  <- as.data.frame(otu_table(ps_rel))
+present  <- (otu_abs >= min_reads | otu_rel >= min_relab) * 1
+meta     <- data.frame(sample_data(physeq_filtered))
+stopifnot(identical(colnames(present), rownames(meta)))
+
+# ==== 2) 各地點核心 + 聯集核心（Union-core）
+sites <- sort(unique(meta[[site_col]]))
+core_by_site <- function(site_name, cut){
+  idx <- which(meta[[site_col]] == site_name)
+  if (length(idx) < 3) return(character(0))       # 樣本太少就跳過
+  prev <- rowSums(present[, idx, drop=FALSE]) / length(idx)
+  names(which(prev >= cut))
+}
+core_lists <- setNames(lapply(sites, core_by_site, cut = prev_cut), sites)
+union_core <- unique(unlist(core_lists))
+
+
+
+# 若用 UpSetR
+library(UpSetR)
+core_sets <- core_lists  # 你前面算好的各 Site 核心名單
+upset(fromList(core_sets), nsets=length(core_sets), order.by="freq",
+         
+         text.scale = c(3, 3, 2, 2, 2, 3))
+
+shared_all_asv <- Reduce(intersect, core_lists)
+
+length(shared_all_asv)
+shared_all_asv
+
+tax <- as.data.frame(tax_table(physeq_filtered))
+
+shared_all_table <- data.frame(
+  ASV = shared_all_asv,
+  tax[shared_all_asv, , drop = FALSE]
+)
+
+shared_all_table
+library(dplyr)
+library(combinat)
+
+sites <- names(core_sets)
+
+all_combinations <- unlist(
+  lapply(seq_along(sites), function(k)
+    combn(sites, k, simplify = FALSE)),
+  recursive = FALSE
+)
+
+intersection_list <- lapply(all_combinations, function(combo) {
+  
+  in_combo  <- Reduce(intersect, core_sets[combo])
+  out_combo <- Reduce(union, core_sets[setdiff(sites, combo)])
+  
+  unique_asvs <- setdiff(in_combo, out_combo)
+  
+  if (length(unique_asvs) == 0) return(NULL)
+  
+  data.frame(
+    Combination = paste(combo, collapse = " & "),
+    n_asv = length(unique_asvs),
+    ASV = unique_asvs,
+    stringsAsFactors = FALSE
+  )
+})
+
+intersection_df <- bind_rows(intersection_list)
+
+tax_df <- as.data.frame(tax_table(physeq_filtered))
+
+intersection_df <- intersection_df %>%
+  left_join(
+    tibble::rownames_to_column(tax_df, "ASV"),
+    by = "ASV"
+  )
+write.csv(intersection_df,"upset_sym.csv")
+
+library(phyloseq)
+library(dplyr)
+
+asv_upset <- unique(intersection_df$ASV)
+
+ps_upset <- prune_taxa(taxa_names(physeq_filtered) %in% asv_upset,
+                       physeq_filtered)
+
+ps_upset
+
+site_col <- "Site"   # 你的欄位名
+
+ps_target_rel <- transform_sample_counts(ps_upset, function(x) x / sum(x))
+
+df_long <- psmelt(ps_target_rel) %>%   # ← 注意：不是 ps_target_rel
+  mutate(
+    Site = as.character(Site),
+    OTU  = as.character(OTU)
+  ) %>%
+  group_by(Site, OTU) %>%
+  summarise(Abundance = sum(Abundance, na.rm = TRUE), .groups = "drop")
+
+library(dplyr)
+tax_df <- as.data.frame(tax_table(ps_upset)) %>%
+  tibble::rownames_to_column("OTU") %>%
+  select(OTU, Subclade)
+
+df_pie2 <- df_pie %>%
+  left_join(tax_df, by = "OTU") %>%
+  mutate(
+    facet_lab = ifelse(
+      is.na(Subclade),
+      OTU,
+      paste0(OTU, "\n(", Subclade, ")")
+    )
+  )
+
+
+library(ggplot2)
+p <- ggplot(df_pie2, aes(x = 1, y = pie, fill = Site)) +
+  geom_col(width = 1, color = "white", linewidth = 0.15) +
+  coord_polar(theta = "y") +
+  facet_wrap(~ facet_lab, ncol = 9) +
+  scale_fill_manual(values = colors, drop = FALSE) +
+  theme_void(base_size = 12) +
+  theme(
+    strip.text = element_text(size = 6, face = "bold"),
+    legend.position = "right",
+    legend.title = element_text(face = "bold")
+  ) +
+  labs(fill = "Site")
+
+p
+
+
+
+#Fig4####
+rm(list=ls())
+setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data/raw")
+picrust <- readRDS("picrust_with_length.rds")
+#organism_pcoa
+picrust_filter <- subset_samples(picrust, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(picrust_filter, !Site %in% c("Okinawa","Hualien"))
+sample_data(physeq_filtered)$Site[
+  sample_data(physeq_filtered)$Site %in% c("Yilan", "Guishan Island")
+] <- "Northeast coast"
+# 取出 sample_data
+sd <- as(sample_data(physeq_filtered), "data.frame")
+
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+# 距離矩陣
+dist_bray <- phyloseq::distance(physeq_filtered, method = "bray", binary = FALSE)
+
+# 取出樣本資訊
+meta <- as(sample_data(physeq_filtered), "data.frame")
+
+set.seed(123)
+# by = "margin"：給出邊際效果；若想一次性(type I)則改 by = "terms"
+
+
+adon2 <- adonis2(dist_bray ~ Site * Species*length, data = meta,
+                 permutations = 999, by = "terms")
+adon2
+
+
+
+colors <- c(
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",  # 低飽和藍綠
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"   # 低飽和橄欖綠
+)
+
+
+sample_data(picrust_filter)$Site <- factor(sample_data(picrust_filter)$Site,
+                                           levels = c("Northeast coast","Taitung","Kenting","Lyudao","Lanyu","Dongsha",
+                                                      "Penghu","Xiao Liuqiu","Taiping Island"))
+#pcoa_jaccard_binary = ordinate(rarefied_physeq, method = "PCoA", distance = "bray")
+ord <- ordinate(physeq_filtered, method = "PCoA", distance = dist_bray)
+
+# 抓 PCoA 軸解釋度（%）
+eig <- ord$values$Relative_eig * 100
+xlab_txt <- sprintf("PCoA1 (%.1f%%)", eig[1])
+ylab_txt <- sprintf("PCoA2 (%.1f%%)", eig[2])
+
+# adonis2（示例：by="margin"）
+meta <- as(sample_data(physeq_filtered), "data.frame")
+adon_m <- adonis2(as.matrix(dist_bray) ~ Site + Species, data = meta, permutations = 999, by = "margin")
+
+get_r2_p <- function(ad, term){
+  r2 <- ad$R2[rownames(ad) == term]
+  p  <- ad$`Pr(>F)`[rownames(ad) == term]
+  list(r2 = r2, p = p)
+}
+
+rp_site   <- get_r2_p(adon2, "Site")
+rp_sp     <- get_r2_p(adon2, "Species")
+rp_int    <- get_r2_p(adon2, "Site:Species")
+
+a <- plot_ordination(physeq_filtered, ord, type = "samples", color = "Site", shape = "Species") +
+  geom_point(size = 4, alpha = 0.9) +
+  scale_color_manual(values = colors) +
+  coord_equal() +
+  labs(x = xlab_txt, y = ylab_txt) +
+  theme(
+    legend.position = "right",
+    panel.background = element_rect(fill = "white", color = NA),
+    plot.background  = element_rect(fill = "white", color = NA),
+    panel.border = element_rect(color = "black", fill = NA, linewidth = 1),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    axis.title = element_text(size = 16, face = "bold"),
+    axis.text  = element_text(size = 13),
+    legend.title = element_text(size = 14, face = "bold"),
+    legend.text  = element_text(size = 12)
+  )
+
+a
+
+library(dplyr)
+library(tibble)
+dfC <- as.data.frame(adon2) %>%
+  rownames_to_column("Term") %>%
+  filter(Term != "Residual", Term != "Total") %>%
+  mutate(
+    Term = factor(Term, levels = Term[order(R2, decreasing = TRUE)]),
+    sig = case_when(
+      `Pr(>F)` <= 0.001 ~ "***",
+      `Pr(>F)` <= 0.01  ~ "**",
+      `Pr(>F)` <= 0.05  ~ "*",
+      `Pr(>F)` <= 0.1   ~ " ",
+      TRUE              ~ ""
+    ),
+    p_label = ifelse(`Pr(>F)` < 0.001, "<0.001", sprintf("%.3f", `Pr(>F)`))
+  )
+library(ggplot2)
+offset <- max(dfC$R2) * 0.025
+
+b <- ggplot(dfC, aes(x = R2, y = Term)) +
+  geom_col(width = 0.75) +
+  geom_text(
+    data = subset(dfC, sig != ""),
+    aes(x = R2 + offset, label = sig),
+    size = 5,
+    hjust = 0
+  ) +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.18))) +
+  labs(x = expression(italic(R)^2), y = NULL) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.y = element_text(size = 12),
+    axis.title.x = element_text(size = 14, face = "bold")
+  )
+
+b
+
+library(patchwork)
+
+ab <- (a | b)  +
+  plot_annotation(
+    tag_levels = "a",
+    theme = theme(
+      plot.tag = element_text(size = 16, face = "bold")
+    )
+  )
+
+ab
+ggsave("Fig4.jpg", ab, width = 14, height = 4.5, dpi = 600, bg = "white")
+
+#ANOSIM_Site_species####
+library(phyloseq)
+library(vegan)
+library(dplyr)
+library(purrr)
+library(tibble)
+
+physeq <- readRDS("physeq3_with_length_region.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+sd <- as(sample_data(physeq_filtered), "data.frame")
+run_anosim_by_site_drop_small_groups <- function(physeq, site_var = "Site", group_var = "Species",
+                                                 min_n_per_group = 2,
+                                                 permutations = 999, method = "bray", binary = TRUE) {
+  
+  meta_all <- data.frame(sample_data(physeq))
+  sites <- sort(unique(as.character(meta_all[[site_var]])))
+  
+  map_dfr(sites, function(st) {
+    
+    # 先切出該地點的樣本
+    keep_samples0 <- rownames(meta_all)[meta_all[[site_var]] == st]
+    ps0 <- prune_samples(keep_samples0, physeq)
+    ps0 <- prune_taxa(taxa_sums(ps0) > 0, ps0)
+    
+    meta0 <- data.frame(sample_data(ps0))
+    grp0  <- as.character(meta0[[group_var]])
+    tab0  <- table(grp0)
+    
+    # 保留樣本數>=min_n_per_group 的群組
+    keep_groups    <- names(tab0)[tab0 >= min_n_per_group]
+    dropped_groups <- setdiff(names(tab0), keep_groups)
+    
+    # 用「樣本名」來篩掉小群（避免 subset_samples 的 NSE）
+    keep_samples <- rownames(meta0)[meta0[[group_var]] %in% keep_groups]
+    ps <- prune_samples(keep_samples, ps0)
+    ps <- prune_taxa(taxa_sums(ps) > 0, ps)
+    
+    meta <- data.frame(sample_data(ps))
+    grp  <- as.character(meta[[group_var]])
+    
+    if (length(unique(grp)) < 2) {
+      return(tibble(
+        Site = st,
+        n_samples = nsamples(ps0),
+        n_groups  = length(unique(grp0)),
+        kept_groups = ifelse(length(keep_groups)==0, "", paste(keep_groups, collapse = ", ")),
+        dropped_groups = ifelse(length(dropped_groups)==0, "", paste(dropped_groups, collapse = ", ")),
+        R = NA_real_, p = NA_real_,
+        note = "skip: <2 groups after dropping small groups"
+      ))
+    }
+    
+    dist_mat <- phyloseq::distance(ps, method = method, binary = binary)
+    fit <- vegan::anosim(dist_mat, grouping = grp, permutations = permutations)
+    
+    tibble(
+      Site = st,
+      n_samples = nsamples(ps0),
+      n_groups  = length(unique(grp0)),
+      kept_groups = paste(sort(unique(grp)), collapse = ", "),
+      dropped_groups = ifelse(length(dropped_groups)==0, "", paste(dropped_groups, collapse = ", ")),
+      R = unname(fit$statistic),
+      p = fit$signif,
+      note = ""
+    )
+  }) %>%
+    arrange(desc(R))
+}
+
+anosim_table2 <- run_anosim_by_site_drop_small_groups(
+  physeq_filtered,
+  site_var = "Site",
+  group_var = "Species",
+  min_n_per_group = 2,
+  permutations = 999,
+  method = "bray",
+  binary = F
+)
+
+anosim_table2
+
+
+
+
+run_anosim_by_site_drop_small_groups <- function(physeq, site_var = "Species", group_var = "Site",
+                                                 min_n_per_group = 2,
+                                                 permutations = 999, method = "bray", binary = TRUE) {
+  
+  meta_all <- data.frame(sample_data(physeq))
+  sites <- sort(unique(as.character(meta_all[[site_var]])))
+  
+  map_dfr(sites, function(st) {
+    
+    # 先切出該地點的樣本
+    keep_samples0 <- rownames(meta_all)[meta_all[[site_var]] == st]
+    ps0 <- prune_samples(keep_samples0, physeq)
+    ps0 <- prune_taxa(taxa_sums(ps0) > 0, ps0)
+    
+    meta0 <- data.frame(sample_data(ps0))
+    grp0  <- as.character(meta0[[group_var]])
+    tab0  <- table(grp0)
+    
+    # 保留樣本數>=min_n_per_group 的群組
+    keep_groups    <- names(tab0)[tab0 >= min_n_per_group]
+    dropped_groups <- setdiff(names(tab0), keep_groups)
+    
+    # 用「樣本名」來篩掉小群（避免 subset_samples 的 NSE）
+    keep_samples <- rownames(meta0)[meta0[[group_var]] %in% keep_groups]
+    ps <- prune_samples(keep_samples, ps0)
+    ps <- prune_taxa(taxa_sums(ps) > 0, ps)
+    
+    meta <- data.frame(sample_data(ps))
+    grp  <- as.character(meta[[group_var]])
+    
+    if (length(unique(grp)) < 2) {
+      return(tibble(
+        Site = st,
+        n_samples = nsamples(ps0),
+        n_groups  = length(unique(grp0)),
+        kept_groups = ifelse(length(keep_groups)==0, "", paste(keep_groups, collapse = ", ")),
+        dropped_groups = ifelse(length(dropped_groups)==0, "", paste(dropped_groups, collapse = ", ")),
+        R = NA_real_, p = NA_real_,
+        note = "skip: <2 groups after dropping small groups"
+      ))
+    }
+    
+    dist_mat <- phyloseq::distance(ps, method = method, binary = binary)
+    fit <- vegan::anosim(dist_mat, grouping = grp, permutations = permutations)
+    
+    tibble(
+      Site = st,
+      n_samples = nsamples(ps0),
+      n_groups  = length(unique(grp0)),
+      kept_groups = paste(sort(unique(grp)), collapse = ", "),
+      dropped_groups = ifelse(length(dropped_groups)==0, "", paste(dropped_groups, collapse = ", ")),
+      R = unname(fit$statistic),
+      p = fit$signif,
+      note = ""
+    )
+  }) %>%
+    arrange(desc(R))
+}
+
+anosim_table2 <- run_anosim_by_site_drop_small_groups(
+  physeq_filtered,
+  site_var = "Species",
+  group_var = "Site",
+  min_n_per_group = 2,
+  permutations = 999,
+  method = "bray",
+  binary = F
+)
+
+anosim_table2
+
+#pie_chart_old####
+rm(list=ls())
+colors <- c(
+  "Okinawa"         = "#9C5A6E",
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"
+)
+#read_data
+physeq <- readRDS("physeq_sym_with_length.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Clam_species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+# 取出 sample_data
+sd <- as(sample_data(physeq_filtered), "data.frame")
+
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+colnames(sd)[colnames(sd) == "Clam_species"] <- "Species"
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+library(phyloseq)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+sub_rank <- "Subclade"  # 改成你 tax_table 裡的欄位名
+site_var <- "Site"
+
+# 1) agglomerate 到 subclade
+ps_sub <- tax_glom(physeq_filtered, taxrank = sub_rank, NArm = FALSE)
+df <- psmelt(ps_sub)
+
+# 2) Subclade × Site 加總，並在 Subclade 內算比例（這就是你要的方向）
+df_sub_site <- df %>%
+  mutate(
+    Subclade = as.character(.data[[sub_rank]]),
+    Site     = as.character(.data[[site_var]])
+  ) %>%
+  group_by(Subclade, Site) %>%
+  summarise(Abundance = sum(Abundance, na.rm = TRUE), .groups = "drop") %>%
+  group_by(Subclade) %>%
+  mutate(RelAb = Abundance / sum(Abundance)) %>%
+  ungroup()
+
+# 3) 補齊「每個 Subclade 都有所有 Site」（沒出現就補 0）
+all_sites <- sort(unique(as.character(sample_data(physeq_filtered)[[site_var]])))
+
+df_sub_site_full <- df_sub_site %>%
+  mutate(Site = factor(Site, levels = all_sites)) %>%
+  complete(Subclade, Site, fill = list(Abundance = 0, RelAb = 0))
+
+df_sub_site_full$Site <- factor(
+  df_sub_site_full$Site,
+  levels = names(colors)
+)
+
+df_plot <- df_sub_site_full %>%
+  group_by(Subclade) %>%
+  mutate(sumAbun = sum(Abundance, na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(sumAbun > 0) %>%      # 👈 關鍵：整個 subclade = 0 的不要畫
+  select(-sumAbun) %>%
+  mutate(Subclade = droplevels(factor(Subclade)))
+
+
+# 4) 畫：每個 subclade 一個圓餅；切片是 Site（不合併 Other）
+p <- ggplot(df_plot, aes(x = 1, y = RelAb, fill = Site)) +
+  geom_col(width = 1, color = "white", linewidth = 0.2) +
+  coord_polar(theta = "y") +
+  facet_wrap(~ Subclade, ncol = 9) +
+  scale_fill_manual(values = colors, drop = FALSE) +
+  theme_void(base_size = 12) +
+  theme(
+    strip.text      = element_text(face = "bold", size = 9),
+    legend.title    = element_text(face = "bold", size = 11),
+    legend.text     = element_text(size = 10),
+    legend.position = "right"
+  ) +
+  guides(fill = guide_legend(
+    ncol = 1,          # 👈 直向
+    byrow = TRUE
+  )) +
+  labs(fill = "Site")
+
+p
+
+subclade_nsample <- df %>%   # df 是 psmelt(ps_sub)
+  mutate(
+    Subclade = as.character(.data[[sub_rank]]),
+    Site     = as.character(.data[[site_var]])
+  ) %>%
+  group_by(Subclade, Sample) %>%
+  summarise(present = any(Abundance > 0), .groups = "drop") %>%
+  group_by(Subclade) %>%
+  summarise(n_sample = sum(present), .groups = "drop")
+
+
+df_plot2 <- df_plot %>%
+  left_join(subclade_nsample, by = "Subclade") %>%
+  mutate(
+    size_bin = ceiling(n_sample / 20),   # 👈 30 個樣本一級距
+    r = 0.4 + size_bin * 0.25             # 👈 控制圓餅半徑
+  )
+
+
+df_plot2 <- df_plot2 %>%
+  group_by(Subclade) %>%
+  arrange(Site, .by_group = TRUE) %>%   # 想固定 slice 順序可保留
+  mutate(
+    cum = cumsum(RelAb),
+    start = lag(cum, default = 0) * 2*pi,
+    end   = cum * 2*pi
+  ) %>%
+  ungroup()
+
+library(ggforce)
+library(ggplot2)
+
+p <- ggplot(df_plot2) +
+  geom_arc_bar(
+    aes(
+      x0 = 0, y0 = 0,
+      r0 = 0,
+      r  = r,
+      start = start,
+      end   = end,
+      fill  = Site
+    ),
+    color = "white",
+    linewidth = 0.2
+  ) +
+  facet_wrap(~ Subclade, ncol = 9) +
+  coord_fixed() +
+  scale_fill_manual(values = colors, drop = FALSE) +
+  theme_void(base_size = 12) +
+  theme(
+    strip.text      = element_text(face = "bold", size = 15),
+    legend.position = "right"
+  ) +
+  labs(fill = "Site")
+
+p
+#sup2new####
+# 0. packages
+
+library(phyloseq)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+
+# 1. color setting
+
+colors <- c(
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"
+)
+
+
+# 2. read data
+
+physeq <- readRDS("physeq_sym_with_length.rds")
+physeq <- readRDS("physeq3_with_length_region.rds")
+# 移除不需要的樣本
+physeq_filtered_sp <- subset_samples(physeq, !Clam_species %in% c("Tc", "Hh"))
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+# 整理 sample_data 欄位名稱
+sd <- as(sample_data(physeq_filtered), "data.frame")
+colnames(sd)[colnames(sd) == "length_mm"]    <- "length"
+colnames(sd)[colnames(sd) == "Clam_species"] <- "Species"
+sample_data(physeq_filtered) <- sample_data(sd)
+
+
+# 3. parameters
+
+min_reads <- 10
+min_relab <- 1e-4
+prev_cut  <- 0.7
+site_col  <- "Site"
+sub_rank  <- "Subclade"
+sub_rank  <- "Genus"
+
+# 4. ASV-level presence/absence
+#    same logic as UpSet
+
+ps_rel <- transform_sample_counts(physeq_filtered, function(x) x / sum(x))
+
+otu_abs <- as(otu_table(physeq_filtered), "matrix")
+otu_rel <- as(otu_table(ps_rel), "matrix")
+
+# 確保 taxa 在 rows
+if (!taxa_are_rows(physeq_filtered)) {
+  otu_abs <- t(otu_abs)
+  otu_rel <- t(otu_rel)
+}
+
+meta <- data.frame(sample_data(physeq_filtered))
+
+# 確保 sample 順序一致
+stopifnot(identical(colnames(otu_abs), rownames(meta)))
+stopifnot(identical(colnames(otu_rel), rownames(meta)))
+
+# 與 UpSet 相同：reads >= min_reads OR relab >= min_relab
+present <- ((otu_abs >= min_reads) | (otu_rel >= min_relab)) * 1
+
+# 5. site-specific core ASVs
+
+sites <- sort(unique(meta[[site_col]]))
+
+core_by_site <- function(site_name, cut) {
+  idx <- which(meta[[site_col]] == site_name)
+  if (length(idx) < 3) return(character(0))  # 樣本太少時跳過
+  prev <- rowSums(present[, idx, drop = FALSE]) / length(idx)
+  names(which(prev >= cut))
+}
+
+core_lists <- setNames(lapply(sites, core_by_site, cut = prev_cut), sites)
+
+# union-core ASVs
+union_core <- unique(unlist(core_lists))
+
+cat("Number of union-core ASVs:", length(union_core), "\n")
+
+
+# 6. taxonomy table
+
+tax <- as.data.frame(tax_table(physeq_filtered))
+tax$ASV <- rownames(tax)
+
+# 確保有 Subclade 欄位
+if (!(sub_rank %in% colnames(tax))) {
+  stop(paste("Taxonomy table does not contain column:", sub_rank))
+}
+
+
+# 7. convert core_lists to long format
+
+# stack() 會把 list 轉成兩欄：
+# values = ASV
+# ind    = Site
+core_df <- stack(core_lists)
+colnames(core_df) <- c("ASV", "Site")
+
+# 只保留 union-core
+core_df <- core_df %>%
+  filter(Subclade %in% union_core)
+
+# 接上 Subclade 資訊
+core_df$Subclade <- tax[core_df$Subclade, sub_rank]
+core_df$Genus <- tax[core_df$ASV, sub_rank]
+# 去掉沒有 Subclade 註解者（如果你想保留可改成 "Unknown"）
+core_df <- core_df %>%
+  filter(!is.na(Subclade), Subclade != "")
+
+
+core_df <- core_df %>%
+  filter(!is.na(Genus), Genus != "")
+# 8. count ASV membership by Subclade × Site
+
+sub_site_counts <- core_df %>%
+  group_by(Subclade, Site) %>%
+  summarise(n_ASV = n(), .groups = "drop")
+
+sub_site_counts <- core_df %>%
+  group_by(Genus, Site) %>%
+  summarise(n_ASV = n(), .groups = "drop")
+# 9. convert to within-Subclade proportions
+sub_site_prop <- sub_site_counts %>%
+  group_by(Subclade) %>%
+  mutate(RelProp = n_ASV / sum(n_ASV)) %>%
+  ungroup()
+
+sub_site_prop <- sub_site_counts %>%
+  group_by(Genus) %>%
+  mutate(RelProp = n_ASV / sum(n_ASV)) %>%
+  ungroup()
+
+# 10. fill missing Site combinations
+all_sites <- names(colors)
+
+df_plot <- sub_site_prop %>%
+  mutate(Site = factor(Site, levels = all_sites)) %>%
+  complete(Subclade, Site, fill = list(n_ASV = 0, RelProp = 0))
+
+df_plot <- sub_site_prop %>%
+  mutate(Site = factor(Site, levels = all_sites)) %>%
+  complete(Genus, Site, fill = list(n_ASV = 0, RelProp = 0))
+
+df_plot$Site <- factor(df_plot$Site, levels = all_sites)
+
+# 移除 total = 0 的 subclade
+df_plot <- df_plot %>%
+  group_by(Subclade) %>%
+  mutate(total_n = sum(n_ASV, na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(total_n > 0) %>%
+  select(-total_n)
+
+df_plot <- df_plot %>%
+  group_by(Genus) %>%
+  mutate(total_n = sum(n_ASV, na.rm = TRUE)) %>%
+  ungroup() %>%
+  filter(total_n > 0) %>%
+  select(-total_n)
+# 11. optional: reorder Subclade
+#     by total number of core ASVs
+
+subclade_order <- df_plot %>%
+  group_by(Subclade) %>%
+  summarise(total_core_ASV = sum(n_ASV), .groups = "drop") %>%
+  arrange(desc(total_core_ASV)) %>%
+  pull(Subclade)
+
+df_plot$Subclade <- factor(df_plot$Subclade, levels = subclade_order)
+
+subclade_order <- df_plot %>%
+  group_by(Genus) %>%
+  summarise(total_core_ASV = sum(n_ASV), .groups = "drop") %>%
+  arrange(desc(total_core_ASV)) %>%
+  pull(Genus)
+
+df_plot$Genus <- factor(df_plot$Genus, levels = subclade_order)
+# 12. inspect data
+
+# 各 site 的 core ASV 數量
+core_size_table <- data.frame(
+  Site = names(core_lists),
+  N_core_ASV = sapply(core_lists, length)
+)
+print(core_size_table)
+
+# 各 Subclade 總共有多少 core ASV
+subclade_summary <- df_plot %>%
+  group_by(Subclade) %>%
+  summarise(total_core_ASV = sum(n_ASV), .groups = "drop") %>%
+  arrange(desc(total_core_ASV))
+
+subclade_summary <- df_plot %>%
+  group_by(Genus) %>%
+  summarise(total_core_ASV = sum(n_ASV), .groups = "drop") %>%
+  arrange(desc(total_core_ASV))
+
+# 13. plot pie charts
+
+p <- ggplot(df_plot, aes(x = 1, y = RelProp, fill = Site)) +
+  geom_col(width = 1, color = "white", linewidth = 0.2) +
+  coord_polar(theta = "y") +
+  facet_wrap(~ Subclade, ncol = 8) +
+  scale_fill_manual(values = colors, drop = FALSE) +
+  theme_void(base_size = 12) +
+  theme(
+    strip.text      = element_text(face = "bold", size = 10),
+    legend.title    = element_text(face = "bold", size = 11),
+    legend.text     = element_text(size = 10),
+    legend.position = "right"
+  ) +
+  guides(fill = guide_legend(
+    ncol = 1,
+    byrow = TRUE
+  )) +
+  labs(fill = "Site")
+
+
+p <- ggplot(df_plot, aes(x = 1, y = RelProp, fill = Site)) +
+  geom_col(width = 1, color = "white", linewidth = 0.2) +
+  coord_polar(theta = "y") +
+  facet_wrap(~ Genus, ncol = 8) +
+  scale_fill_manual(values = colors, drop = FALSE) +
+  theme_void(base_size = 12) +
+  theme(
+    strip.text = element_text(
+      face = "bold",
+      size = 10,
+      margin = margin(t = 2, r = 2, b = 4, l = 2),
+      lineheight = 1.1
+    ),
+    strip.clip = "off",
+    legend.title = element_text(face = "bold", size = 11),
+    legend.text = element_text(size = 10),
+    legend.position = "right"
+  ) +
+  guides(fill = guide_legend(
+    ncol = 1,
+    byrow = TRUE
+  )) +
+  labs(fill = "Site")
+
+print(p)
+
+# 14. save figure
+
+ggsave(
+  filename = "genus_pie_from_core_ASV_membership.jpg",
+  plot = p,
+  width = 16,
+  height = 8,
+  dpi = 300
+)
+#Figure5####
+install.packages(
+  "SpiecEasi",
+  repos = c("https://bioc.r-universe.dev", "https://cloud.r-project.org")
+)
+setwd("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data")
+rm(list=ls())
+
+physeq <- readRDS("physeq2_with_length.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+sd <- as(sample_data(physeq_filtered), "data.frame")
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+
+library(phyloseq)
+library(SpiecEasi)
+library(igraph)
+library(RColorBrewer)
+
+# 1. subset samples
+ps_3sites <- subset_samples(physeq_filtered, Site %in% c("Northeast coast","Kenting",
+                                                         "Penghu","Xiao Liuqiu"))
+
+# 2. transform to relative abundance (for node size calculation)
+ps_rel <- transform_sample_counts(ps_3sites, function(x) x / sum(x))
+
+# 3. calculate mean relative abundance of each taxon across all samples
+tax_abund <- taxa_sums(ps_rel) / nsamples(ps_rel)
+
+# 4. select top 150 most abundant taxa
+top150_taxa <- names(sort(tax_abund, decreasing = TRUE))[1:150]
+
+ps_top150 <- prune_taxa(top150_taxa, ps_3sites)
+ps_top150_rel <- prune_taxa(top150_taxa, ps_rel)
+
+# 5. build network with SpiecEasi
+se.mb <- spiec.easi(
+  ps_top150,
+  method = "mb",
+  lambda.min.ratio = 1e-2,
+  nlambda = 20,
+  pulsar.params = list(rep.num = 10)
+)
+
+# 6. convert to igraph
+ig <- adj2igraph(
+  getRefit(se.mb),
+  vertex.attr = list(name = taxa_names(ps_top150))
+)
+
+# 7. extract taxonomy table
+tax <- as.data.frame(tax_table(ps_top150))
+
+# 8. assign phylum and genus
+V(ig)$Phylum <- tax[V(ig)$name, "Phylum"]
+V(ig)$Genus  <- tax[V(ig)$name, "Genus"]
+
+# 9. assign node size based on mean relative abundance
+mean_rel_abund <- taxa_sums(ps_top150_rel) / nsamples(ps_top150_rel)
+V(ig)$abundance <- mean_rel_abund[V(ig)$name]
+
+# scale node size for plotting
+V(ig)$size <- scales::rescale(V(ig)$abundance, to = c(4, 14))
+
+# 10. assign colors by phylum
+phylum_levels <- unique(V(ig)$Phylum)
+phylum_levels <- phylum_levels[!is.na(phylum_levels)]
+
+n_phy <- length(phylum_levels)
+
+# generate enough colors
+if (n_phy <= 12) {
+  phylum_cols <- brewer.pal(max(3, n_phy), "Set3")[1:n_phy]
+} else {
+  phylum_cols <- colorRampPalette(brewer.pal(12, "Set3"))(n_phy)
+}
+
+cols <- setNames(phylum_cols, phylum_levels)
+
+# for NA phylum
+cols <- c(cols, "Unknown" = "grey80")
+V(ig)$Phylum[is.na(V(ig)$Phylum)] <- "Unknown"
+
+V(ig)$color <- cols[V(ig)$Phylum]
+
+# 11. plot
+set.seed(123)
+lay <- layout_with_fr(ig)
+
+plot(
+  ig,
+  layout = lay,
+  vertex.size = V(ig)$size,
+  vertex.color = V(ig)$color,
+  vertex.label = NA,
+  edge.width = 0.8,
+  edge.color = "grey70",
+  vertex.frame.color = "black"
+)
+
+legend(
+  "topleft",
+  legend = names(cols),
+  col = cols,
+  pch = 16,
+  pt.cex = 1.2,
+  cex = 0.8,
+  bty = "n",
+  title = "Phylum"
+)
+
+
+
+# 8. assign Family and Genus
+V(ig)$Family <- tax[V(ig)$name, "Family"]
+V(ig)$Genus  <- tax[V(ig)$name, "Genus"]
+
+# 9. assign node size based on mean relative abundance
+mean_rel_abund <- taxa_sums(ps_top150_rel) / nsamples(ps_top150_rel)
+V(ig)$abundance <- mean_rel_abund[V(ig)$name]
+
+# scale node size for plotting
+V(ig)$size <- scales::rescale(V(ig)$abundance, to = c(4, 14))
+
+# 10. assign colors by Family
+family_levels <- unique(V(ig)$Family)
+family_levels <- family_levels[!is.na(family_levels)]
+
+n_fam <- length(family_levels)
+
+if (n_fam <= 12) {
+  family_cols <- brewer.pal(max(3, n_fam), "Set3")[1:n_fam]
+} else {
+  family_cols <- colorRampPalette(brewer.pal(12, "Set3"))(n_fam)
+}
+
+cols <- setNames(family_cols, family_levels)
+
+# for NA family
+cols <- c(cols, "Unknown" = "grey80")
+V(ig)$Family[is.na(V(ig)$Family)] <- "Unknown"
+
+V(ig)$color <- cols[V(ig)$Family]
+
+# 11. plot
+set.seed(123)
+lay <- layout_with_fr(ig)
+
+plot(
+  ig,
+  layout = lay,
+  vertex.size = V(ig)$size,
+  vertex.color = V(ig)$color,
+  vertex.label = NA,
+  edge.width = 0.8,
+  edge.color = "grey70",
+  vertex.frame.color = "black"
+)
+
+legend(
+  "topleft",
+  legend = names(cols),
+  col = cols,
+  pch = 16,
+  pt.cex = 1.2,
+  cex = 0.8,
+  bty = "n",
+  title = "Family"
+)
+
+colours <- c(
+  "#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd",
+  "#8c564b","#e377c2","#7f7f7f","#bcbd22","#17becf",
+  
+  "#393b79","#637939","#8c6d31","#843c39","#7b4173",
+  "#3182bd","#31a354","#756bb1","#636363","#e6550d",
+  
+  "#969696","#6baed6","#74c476","#fd8d3c","#9e9ac8",
+  "#bdbdbd","#c7e9c0","#fdae6b","#dadaeb","#fdd0a2",
+  
+  "#5254a3","#8ca252","#bd9e39","#ad494a","#a55194",
+  "#6b6ecf","#b5cf6b","#e7ba52","#d6616b","#ce6dbd",
+  
+  "#9c9ede","#cedb9c","#e7cb94","#e7969c","#de9ed6",
+  "#3182bd","#e6550d","#31a354","#756bb1","#636363"
+)
+fam_vec <- V(ig)$Family
+
+top50 <- names(sort(table(fam_vec), decreasing = TRUE))[1:50]
+
+V(ig)$Family_group <- ifelse(fam_vec %in% top50, fam_vec, "Other")
+V(ig)$Family_group[is.na(V(ig)$Family_group)] <- "Other"
+
+family_levels <- unique(V(ig)$Family_group)
+family_levels <- family_levels[family_levels != "Other"]
+
+n_fam <- length(family_levels)
+
+# 用你自己的顏色
+if (length(colours) < n_fam) {
+  stop("colours 數量不足，請增加 colours 向量長度")
+}
+
+family_cols <- colours[1:n_fam]
+
+cols <- setNames(family_cols, family_levels)
+
+# Other 灰色
+cols <- c(cols, "Other" = "grey80")
+
+# assign node color
+V(ig)$color <- cols[V(ig)$Family_group]
+
+jpeg("/Users/linyanzhi/Desktop/漁科所406/蒙貝貝樣本/data/paper/Final/other_network_family.jpg", 
+     width = 3000, 
+     height = 2200, 
+     res = 300)
+
+layout(matrix(c(1,2), nrow = 2), heights = c(4,1.2))
+
+# network
+par(mar = c(1,1,1,1))
+plot(
+  ig,
+  layout = lay,
+  vertex.size = V(ig)$size,
+  vertex.color = V(ig)$color,
+  vertex.label = NA,
+  edge.width = 0.6,
+  edge.color = "grey70",
+  vertex.frame.color = "grey30"
+)
+
+# legend area
+par(mar = c(0,0,0,0))
+plot.new()
+
+legend(
+  "center",
+  legend = names(cols)[names(cols) != "Other"],
+  col = cols[names(cols) != "Other"],
+  pch = 16,
+  pt.cex = 0.8,
+  cex = 0.6,
+  bty = "n",
+  ncol = 4
+)
+
+dev.off()
+
+
+
+#Rubritalea####
+physeq <- readRDS("physeq3_with_length_region.rds")
+physeq_filtered_sp <- subset_samples(physeq, !Species %in% c("Tc", "Hh"))
+physeq_filtered <- subset_samples(physeq_filtered_sp, !Site %in% "Okinawa")
+sd <- as(sample_data(physeq_filtered), "data.frame")
+
+# 改欄位名稱
+colnames(sd)[colnames(sd) == "length_mm"] <- "length"
+# 放回 phyloseq 物件
+sample_data(physeq_filtered) <- sample_data(sd)
+# 1. 轉成 relative abundance
+ps_rel <- transform_sample_counts(physeq_filtered, function(x) x / sum(x))
+physeq_ru <- subset_taxa(ps_rel, Genus == "g__Rubritalea")
+# 轉 dataframe
+df <- psmelt(physeq_ru)
+
+# 計算 Species × ASV 平均相對豐度
+df_rubri <- df %>%
+  group_by(OTU, sample_Species) %>%
+  summarise(
+    mean_rel_abundance = mean(Abundance, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+df_rubri <- df_rubri %>%
+  group_by(OTU) %>%
+  filter(sum(mean_rel_abundance) > 0) %>%
+  ungroup()
+
+df_rubri_filt <- df_rubri %>%
+  group_by(OTU) %>%
+  filter(max(mean_rel_abundance, na.rm = TRUE) > 0.001) %>%
+  ungroup()
+# 看剩幾個 ASV
+length(unique(df_rubri_filt$OTU))
+# bubble chart
+species_cols <- c(
+  "Tm" = "#E69F00",
+  "Tn" = "#56B4E9",
+  "Ts" = "#009E73"
+)
+p1 <- ggplot(df_rubri_filt,
+             aes(x = sample_Species,
+                 y = OTU,
+                 size = mean_rel_abundance,
+                 fill = sample_Species)) +
+  geom_point(shape = 21, colour = "black", alpha = 0.9) +
+  scale_fill_manual(values = species_cols) +
+  scale_size(range = c(1,10), name = "Mean relative abundance") +
+  theme_classic(base_size = 13) +
+  guides(fill = "none")+
+  labs(
+    x = "Species",
+    y = "Rubritalea ASVs"
+  )
+
+p1
+
+# 計算 Species × ASV 平均相對豐度
+df_rubri <- df %>%
+  group_by(OTU, Site) %>%
+  summarise(
+    mean_rel_abundance = mean(Abundance, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+df_rubri <- df_rubri %>%
+  group_by(OTU) %>%
+  filter(sum(mean_rel_abundance) > 0) %>%
+  ungroup()
+
+df_rubri_filt <- df_rubri %>%
+  group_by(OTU) %>%
+  filter(max(mean_rel_abundance, na.rm = TRUE) > 0.001) %>%
+  ungroup()
+# 看剩幾個 ASV
+length(unique(df_rubri_filt$OTU))
+# bubble chart
+
+site_order <- c(
+  "Lanyu",
+  "Lyudao",
+  "Taitung",
+  "Dongsha",
+  "Taiping Island",
+  "Northeast coast",
+  "Kenting",
+  "Penghu",
+  "Xiao Liuqiu"
+)
+
+df_rubri_filt$Site <- factor(df_rubri_filt$Site, levels = site_order)
+
+sites_cols <- c(
+
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",  # 低飽和藍綠
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"   # 低飽和橄欖綠
+)
+
+p2 <- ggplot(df_rubri_filt,
+            aes(x = Site,
+                y = OTU,
+                size = mean_rel_abundance,
+                fill = Site)) +
+  geom_point(shape = 21, colour = "black", alpha = 0.9) +
+  scale_fill_manual(values = sites_cols) +
+  scale_size(range = c(1,10), name = "Mean relative abundance") +
+  theme_classic(base_size = 13) +
+  labs(
+    x = "Species",
+    y = "Rubritalea ASVs"
+  )+
+  guides(fill = "none")
+
+p2
+
+library(patchwork)
+
+p_ab <- p1 | p2 +
+  plot_annotation(tag_levels = "a")
+
+p_ab
+physeq_ru2 <- prune_samples(sample_sums(physeq_ru) > 0, physeq_ru)
+# 距離矩陣
+dist_bray <- phyloseq::distance(physeq_ru2, method = "bray", binary = FALSE)
+
+# 取出樣本資訊
+meta <- as(sample_data(physeq_ru2), "data.frame")
+
+set.seed(123)
+# by = "margin"：給出邊際效果；若想一次性(type I)則改 by = "terms"
+
+
+adon2 <- adonis2(dist_bray ~ Site * Species, data = meta,
+                 permutations = 999, by = "terms")
+adon2
+
+
+library(pairwiseAdonis)
+
+pair_site <- pairwise.adonis2(
+  dist_bray ~ Species,
+  data = meta,
+  permutations = 999
+)
+
+pair_site
+
+#Relativeabundance####
+Stability_phylum<-physeq_filtered %>%
+  tax_glom(taxrank = "Genus")%>%
+  transform_sample_counts(function(x) {x/sum(x)}) %>%
+  psmelt()
+library(dplyr)
+
+top50 <- Stability_phylum %>%
+  group_by(Genus) %>%
+  summarise(total_abundance = sum(Abundance)) %>%
+  arrange(desc(total_abundance)) %>%
+  slice(1:50) %>%
+  pull(Genus)
+Stability_phylum$Genus2 <- ifelse(Stability_phylum$Genus %in% top50,
+                                  Stability_phylum$Genus,
+                                  "Others")
+colourCount = length(unique(Stability_phylum$Genus2))
+colours <- c("#B3C8CF", "#BDAA97", "#5C8FB5", "#DDD6CC", "#F2D0A4", "#9BBF9E", "#C2B9A7", "#D9A5B3", "#6D8FAF", "#7A7E84", "#E5C6A5", "#8FA6B4", "#C79C8C", "#E3D5CA", "#7A9E9F", "#A0B5B9", "#C2B9A7", "#A58D84", "#D0CAB2", "#F4D8A8", "#A2B7A1", "#BAC7BE", "#F7E1C3", "#C6A9A3", "#A4D0D5", "#A9B0B6", "#E1B7A0", "#EEC68E", "#A4B4C2", "#F2E2D2", "#3F6B99", "#D8B6A4", "#CBA3B3", "#B4D1F2", "#AD8A9C", "#6C9BA5", "#123652", "#E5D4C0", "#CBA79E", "#D7CCC8", "#C0D6D6", "#8C7C68", "#2C6E9F", "#7BA6DC", "#D6B5C3", "#9CA89E", "#91A6A6", "#E3D5CA", "#6E5E4E", "#4F6D75", "#F1DEE6", "#7A9E9F", "#0F4C81", "#50565B")
+
+Stability_phylum$Site <- factor(Stability_phylum$Site,levels=c("Lanyu", "Lyudao","Taitung","Taiping Island","Dongsha","Okinawa","Northeast coast","Kenting",
+                                                                       "Penghu","Xiao Liuqiu"))
+
+Stability_site_mean <- Stability_phylum %>%
+  group_by(Site, Genus2) %>%
+  summarise(Abundance = mean(Abundance), .groups = "drop")
+
+Stability_site_mean <- Stability_site_mean %>%
+  group_by(Site) %>%
+  mutate(Abundance = Abundance / sum(Abundance))
+PlotPhylum<-ggplot(Stability_site_mean, aes(x=Site,y=Abundance,fill=Genus2))+
+  geom_bar(stat="identity")+ 
+  labs(x="Samples",y="Relative abundance",
+       fill="Genus")+
+  theme(axis.text.x = element_text(angle=90, hjust=1))+
+  scale_fill_manual(values=colours)+
+  guides(fill = guide_legend(ncol = 2))
+PlotPhylum
+
+physeq_relabund <- transform_sample_counts(physeq_filtered, function(x) x / sum(x))
+physeq_endo <- subset_taxa(physeq_relabund, Genus == "g__Rubritalea")
+
+Stability_phylum<-physeq_endo %>%
+  tax_glom(taxrank = "Genus")%>%
+  psmelt()
+
+colors <- c(
+  "Okinawa"         = "#9C5A6E",
+  "Northeast coast" = "#FF6666",
+  "Taitung"         = "#006699",
+  "Kenting"         = "#FFCC66",
+  "Lyudao"          = "#3366FF",
+  "Lanyu"           = "#33CCFF",
+  "Dongsha"         = "#6F9E8E",  # 低飽和藍綠
+  "Penghu"          = "#CC6600",
+  "Xiao Liuqiu"     = "#FF9933",
+  "Taiping Island"  = "#C6D3B6"   # 低飽和橄欖綠
+)
+Stability_phylum$Site <- factor(Stability_phylum$Site,levels=c("Lanyu", "Lyudao","Taitung","Taiping Island","Dongsha","Okinawa","Northeast coast","Kenting",
+                                                               "Penghu","Xiao Liuqiu"))
+
+PlotEndo <- ggplot(Stability_phylum,
+                   aes(x = Site, y = Abundance, fill = Site)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2, size = 2, alpha = 0.7) +
+  scale_fill_manual(values = colors) +
+  labs(x = "Site",
+       y = "Relative abundance of Rubritalea") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        legend.position = "none")+
+  theme_bw()
+
+PlotEndo
